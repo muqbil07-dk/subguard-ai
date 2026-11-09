@@ -9,11 +9,12 @@ A separate real PayPal Sandbox checkout demonstrates the authorized payment and
 verified webhook lifecycle. Its merchant receipts do not masquerade as the user's
 external subscription expenses.
 
-**Phase 1 is the only phase delivered by this change.** No frontend, backend,
-database, AI or payment runtime is implemented. Every gate below describes future
-work unless explicitly listed in the Phase 1 handoff. Phase 2 waits for owner
-approval. No account provisioning, provider setup, environment publication or
-deployment is implied by this commit.
+**Phase 2 frontend implementation has now been authorized and delivered** after
+the Phase 1 foundation. See [FRONTEND_IMPLEMENTATION.md](FRONTEND_IMPLEMENTATION.md)
+for its scope and handoff. Backend, database, AI and payment integrations remain
+future work; the gates below still define their implementation sequence. No
+account provisioning, provider setup, environment publication or deployment is
+implied by the frontend implementation.
 
 MVP excludes external bank aggregation, universal PayPal customer history,
 automatic merchant cancellation, moving customer funds, currency conversion,

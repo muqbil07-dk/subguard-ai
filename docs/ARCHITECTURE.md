@@ -8,11 +8,13 @@ It does not hold customer funds or guarantee prevention of a charge.
 
 ## 1. Status and decisions
 
-This is the **Phase 1 design**, not a description of working integrations. The
-repository contains directory scaffolding, environment templates and documents.
-React, Express, Supabase, PayPal and AI clients are not implemented or installed.
-No database migrations have been applied and no credentials are needed to review
-this foundation. Phase 2 requires the owner's approval.
+This is the **Phase 1 architecture contract**, not a description of working
+integrations. Phase 2 now implements the React frontend and an isolated local
+demo adapter following the approved plan; see the
+[frontend handoff](FRONTEND_IMPLEMENTATION.md). Express, Supabase, PayPal and AI
+provider integrations remain unimplemented. No database migrations have been
+applied, and the frontend demo requires no credentials. The component and domain
+boundaries below remain the target for the later backend phases.
 
 | Decision | Rationale and boundary |
 | --- | --- |
@@ -28,6 +30,8 @@ this foundation. Phase 2 requires the owner's approval.
 The existing README, LICENSE and `.gitignore` are preserved unchanged. The
 component READMEs explain each folder; `.gitkeep` tracks reserved empty folders.
 There are no placeholder runtime endpoints masquerading as implemented features.
+Local demo calculations support the frontend preview only; real-user financial
+logic remains a backend responsibility.
 
 ## 2. Components and data flow
 
