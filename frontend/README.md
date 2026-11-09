@@ -87,3 +87,13 @@ must be visibly labeled sample data and isolated from real user accounts.
 
 See the [Phase 2 implementation handoff](../docs/FRONTEND_IMPLEMENTATION.md) for
 routes, service boundaries, testing coverage and integration work remaining.
+
+## Supabase account (Phase 3)
+
+Login/registration now connect when public Supabase settings are provided.
+`/account` is protected and uses database-backed subscription/transaction CRUD,
+profile/preferences, notifications and stored insights. `/app` remains the
+separate local demo and is never an authentication-error fallback. See
+[Supabase setup and migration instructions](../docs/SUPABASE_IMPLEMENTATION.md).
+No live project is configured in this environment; credential-free tests exercise
+mocked SDK boundaries and PostgreSQL RLS through PGlite.
