@@ -1,0 +1,13 @@
+import { z } from 'zod';
+export const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v=>v>='2000-01-01'&&v<='2100-12-31'&&!Number.isNaN(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v,'Invalid calendar date');
+export const currency=z.enum(['INR','USD','EUR','GBP','JPY']);
+const amount=z.string().regex(/^\d{1,12}$/).refine(v=>BigInt(v)<=100000000000n,'Amount too large');
+export const id=z.uuid();
+export const subscription=z.strictObject({name:z.string().trim().min(1).max(80),category:z.string().trim().min(1).max(40),amountMinor:amount.refine(v=>BigInt(v)>0n,'Amount must be positive'),currency,frequency:z.enum(['Weekly','Monthly','Quarterly','Yearly']),nextRenewal:date,status:z.enum(['Active','Paused','Cancelled']).default('Active'),unused:z.boolean().default(false),reminder:z.boolean().default(true),color:z.string().regex(/^#[a-fA-F0-9]{6}$/).default('#9279ff'),initials:z.string().max(3).default('')});
+export const subscriptionPatch=z.strictObject(Object.fromEntries(Object.entries(subscription.shape).map(([key,value])=>[key,(value instanceof z.ZodDefault?value.removeDefault():value).optional()]))).refine(v=>Object.keys(v).length>0,'Provide at least one field');
+export const transaction=z.strictObject({merchant:z.string().trim().min(1).max(80),amountMinor:amount,currency,date,category:z.string().trim().min(1).max(40),source:z.literal('User CSV import').default('User CSV import'),status:z.enum(['Completed','Pending','Reversed']).default('Completed'),direction:z.enum(['debit','credit']).default('debit'),batchKey:z.string().min(1).max(200),rowIndex:z.number().int().min(0).max(499)});
+export const transactionPatch=z.strictObject({status:z.enum(['Completed','Pending','Reversed'])});
+export const filters=z.strictObject({page:z.coerce.number().int().min(1).max(10000).default(1),limit:z.coerce.number().int().min(1).max(100).default(25),currency:currency.optional(),from:date.optional(),to:date.optional(),merchant:z.string().trim().max(80).optional(),category:z.string().trim().max(40).optional(),status:z.string().max(20).optional()});
+export const period=z.strictObject({currency:currency.default('INR'),from:date.optional(),to:date.optional()}).refine(v=>!v.from||!v.to||v.from<=v.to,'Invalid date range');
+export const importBody=z.strictObject({rows:z.array(transaction.omit({batchKey:true,rowIndex:true,source:true})).min(1).max(500)});
+export const parse=(schema,value)=>schema.parse(value);

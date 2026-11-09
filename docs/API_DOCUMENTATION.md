@@ -2,6 +2,9 @@
 
 ## Status and boundary
 
+Phase 4 now implements the bounded route set in [BACKEND_IMPLEMENTATION.md](BACKEND_IMPLEMENTATION.md). The detailed original contract below remains the target design; use the implementation handoff for currently executable paths, pagination and schemas.
+
+
 This is the Phase 1 contract for the future Express REST API. **No endpoints,
 authentication middleware, payment calls, webhooks, or database migrations are
 implemented by this foundation.** Examples describe proposed shapes, not observed

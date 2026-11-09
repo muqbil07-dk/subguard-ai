@@ -1,5 +1,9 @@
 # Phase 3: Supabase persistence and Auth
 
+Phase 4 now routes financial and notification operations through Express; see
+[backend handoff](BACKEND_IMPLEMENTATION.md). The account behavior described below
+records the Phase 3 implementation and database security contract.
+
 This change adds executable migrations and SDK integration, not a provisioned
 Supabase project. No credentials are bundled. The original `/app` remains the
 isolated local demo. `/account` is a protected, database-backed workspace using

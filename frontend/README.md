@@ -97,3 +97,11 @@ separate local demo and is never an authentication-error fallback. See
 [Supabase setup and migration instructions](../docs/SUPABASE_IMPLEMENTATION.md).
 No live project is configured in this environment; credential-free tests exercise
 mocked SDK boundaries and PostgreSQL RLS through PGlite.
+
+## Backend integration (Phase 4)
+
+Set `VITE_API_BASE_URL` to the Express API base (`/api` or `/api/v1`). The protected
+`/account` now uses backend financial/notification services and actual-data dashboard
+and calendar responses; `/app` remains the explicit local demo. An API failure
+never falls back to demo records. Profile/preferences and stored insights retain
+their Phase 3 RLS-scoped services. See [backend handoff](../docs/BACKEND_IMPLEMENTATION.md).
