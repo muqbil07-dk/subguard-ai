@@ -14,7 +14,13 @@ export function createApiService({getClient=requireSupabase,fetcher=globalThis.f
  });
  const notifications=resource('/notifications');notifications.update=async id=>(await request(`/notifications/${encodeURIComponent(id)}/read`,{method:'PATCH',body:{}})).data;
  const query=values=>new URLSearchParams(values).toString();
- return {subscriptions:resource('/subscriptions'),transactions:resource('/transactions'),notifications,
+ return {
+ intelligence:{
+ async analyze(){return (await request('/intelligence/analyze-transactions',{method:'POST',body:{}})).data},
+ async list(kind,page=1){return request(`/intelligence/${kind}?page=${page}&limit=25`)},
+ async summary(){return (await request('/intelligence/summary')).data},
+ async review(id,decision){return (await request(`/intelligence/suggestions/${encodeURIComponent(id)}/${decision}`,{method:'POST',body:{}})).data},
+ },subscriptions:resource('/subscriptions'),transactions:resource('/transactions'),notifications,
  async importTransactions(rows,batch){return (await request('/transactions/imports',{method:'POST',headers:{'Idempotency-Key':batch},body:{rows}})).data},
  async summary(options={}){return (await request(`/dashboard/summary?${query(options)}`)).data},
  async spending(options={}){return (await request(`/dashboard/spending?${query(options)}`)).data},

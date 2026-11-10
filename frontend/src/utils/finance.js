@@ -51,6 +51,7 @@ export function monthlyMinor(subscription) {
   const amount = moneyInteger(subscription.amountMinor);
   switch (subscription.frequency) {
     case 'Weekly': return roundDivide(amount * 52n, 12n);
+    case 'Half-yearly': return roundDivide(amount, 6n);
     case 'Quarterly': return roundDivide(amount, 3n);
     case 'Yearly': return roundDivide(amount, 12n);
     case 'Monthly': return amount;

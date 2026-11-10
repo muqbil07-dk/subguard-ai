@@ -11,7 +11,7 @@ export function createAuthenticator(config, clientFactory = createClient) {
     const {data,error}=response;
     if(error) { if(error.status>=500 || !error.status) throw new ApiError(503,'AUTH_UNAVAILABLE','Authentication service unavailable.'); throw new ApiError(401,'UNAUTHORIZED','Invalid or expired access token.'); }
     if(!data?.user?.id) throw new ApiError(401,'UNAUTHORIZED','Invalid or expired access token.');
-    return {user:data.user,repository:createRepository(client,data.user.id)};
+    return {user:data.user,repository:createRepository(client,data.user.id,config.SUPABASE_SERVICE_ROLE_KEY?clientFactory(config.SUPABASE_URL,config.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}}):null)};
   };
 }
 export const requireAuth = authenticate => async (req,_res,next) => {

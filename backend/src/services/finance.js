@@ -1,9 +1,9 @@
 import { ApiError } from '../utils/errors.js';
 const divide=(n,d)=>(n+d/2n)/d;
-export function monthly(plan){const n=BigInt(plan.amountMinor);return ({Weekly:()=>divide(n*52n,12n),Monthly:()=>n,Quarterly:()=>divide(n,3n),Yearly:()=>divide(n,12n)})[plan.frequency]();}
+export function monthly(plan){const n=BigInt(plan.amountMinor);return ({Weekly:()=>divide(n*52n,12n),Monthly:()=>n,Quarterly:()=>divide(n,3n),'Half-yearly':()=>divide(n,6n),Yearly:()=>divide(n,12n)})[plan.frequency]();}
 export const today=()=>new Date().toISOString().slice(0,10);
 export function addDays(date,n){const d=new Date(`${date}T00:00:00Z`);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
-function advance(anchor,index,frequency){if(frequency==='Weekly')return addDays(anchor,7*index);const [y,m,day]=anchor.split('-').map(Number);const d=new Date(Date.UTC(y,m-1+index*({Monthly:1,Quarterly:3,Yearly:12}[frequency]),1));const end=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,end));return d.toISOString().slice(0,10);}
+function advance(anchor,index,frequency){if(frequency==='Weekly')return addDays(anchor,7*index);const [y,m,day]=anchor.split('-').map(Number);const d=new Date(Date.UTC(y,m-1+index*({Monthly:1,Quarterly:3,'Half-yearly':6,Yearly:12}[frequency]),1));const end=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,end));return d.toISOString().slice(0,10);}
 export function calendar(plans,{currency,from,to}){
  if((Date.parse(to)-Date.parse(from))/86400000>366)throw new ApiError(400,'VALIDATION_ERROR','Calendar window must not exceed 366 days.');
  const events=[];

@@ -2,6 +2,10 @@
 
 ## Status and boundary
 
+Phase 5 intelligence endpoints, storage and validation are documented in
+[SUBSCRIPTION_INTELLIGENCE.md](SUBSCRIPTION_INTELLIGENCE.md).
+
+
 Phase 4 now implements the bounded route set in [BACKEND_IMPLEMENTATION.md](BACKEND_IMPLEMENTATION.md). The detailed original contract below remains the target design; use the implementation handoff for currently executable paths, pagination and schemas.
 
 
