@@ -54,9 +54,12 @@ validation limits are in [PHASE_7_QUALITY_ASSURANCE.md](PHASE_7_QUALITY_ASSURANC
 5. Run `npm start` in `backend` and `npm run dev` in `frontend`. Frontend uses
    `VITE_API_BASE_URL`, never a Google URL or key. Login and open Account → assistant.
    The interface discloses that limited facts and questions are sent to Google.
-6. `npm run ai:smoke` checks real model metadata, function calling and structured
-   output with a **synthetic, nonfinancial readiness fact**. It prints only pass
-   status or a safe error code. It does not require or test Supabase.
+6. Phase 8 guards `npm run ai:smoke` behind explicit `ALLOW_LIVE_VALIDATION=true`.
+   It checks metadata/function calling/structured responses against three synthetic
+   financial scenarios with deterministic expected facts (at most six generation
+   requests plus metadata). It prints only scenario status or safe error codes;
+   no Supabase or customer records are used. Follow
+   [STAGING_LIVE_VALIDATION.md](STAGING_LIVE_VALIDATION.md) before opting in.
 
 These two scripts require actual credentials and were **not run live** in this
 phase. The environment had no Gemini or Supabase variables or usable bindings.

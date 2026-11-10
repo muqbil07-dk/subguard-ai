@@ -7,6 +7,7 @@ import * as finance from '../services/finance.js';
 const parse=schemas.parse;
 export function apiRouter(clock=finance.today,assistant,aiOptions){
  const router=Router();
+ router.get('/readiness',async(req,res)=>{parse(schemas.filters.pick({}),req.query);res.json({data:await req.repository.readiness()});});
  router.use('/ai',aiRouter(assistant,aiOptions));
  router.use('/intelligence',intelligenceRouter(clock));
  const success=(res,data,status=200)=>res.status(status).json({data});

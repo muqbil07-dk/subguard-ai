@@ -7,6 +7,7 @@ export function createRepository(client,userId,intelligenceWriter=null) {
   const owned=table=>client.from(table).select('*',{count:'exact'}).eq('user_id',userId);
   const privileged=()=>{if(!intelligenceWriter)throw new ApiError(503,'INTELLIGENCE_UNAVAILABLE','Intelligence persistence requires server-only configuration.');return intelligenceWriter;};
   return {
+    async readiness(){const {data}=await run(client.from('profiles').select('id').eq('user_id',userId).limit(1));if(!Array.isArray(data)||data.length!==1)throw new ApiError(503,'DATABASE_NOT_READY','Account database readiness could not be established.');return {status:'ready',database:'reachable'};},
     async aiConversations({page=1,limit=25}={}){const {data,count}=await run(client.from('ai_conversations').select('*',{count:'exact'}).eq('user_id',userId).order('updated_at',{ascending:false}).order('id').range((page-1)*limit,page*limit-1));return {rows:data,total:count,page,limit};},
     async aiCreateConversation(title){return (await run(client.from('ai_conversations').insert({user_id:userId,title}).select().single())).data;},
     async aiConversation(id){const {data}=await run(client.from('ai_conversations').select('*').eq('user_id',userId).eq('id',id).maybeSingle());if(!data)throw new ApiError(404,'NOT_FOUND','Conversation not found.');return data;},
