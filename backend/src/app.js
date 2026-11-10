@@ -1,3 +1,5 @@
+import { createGeminiProvider } from './services/ai/geminiClient.js';
+import { createFinancialAssistant } from './services/ai/financialAssistant.js';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -7,7 +9,7 @@ import { ZodError } from 'zod';
 import { ApiError } from './utils/errors.js';
 import { requireAuth } from './middleware/auth.js';
 import { apiRouter } from './routes/api.js';
-export function createApp({authenticate,origin='http://localhost:5173',clock,logger=()=>{},rateLimitMax=120}={}){
+export function createApp({authenticate,origin='http://localhost:5173',clock,logger=()=>{},rateLimitMax=120,assistant=createFinancialAssistant(createGeminiProvider({AI_ENABLED:false})),aiOptions}={}){
  if(!authenticate)throw new Error('An authenticator is required');
  const app=express();app.disable('x-powered-by');app.set('trust proxy',false);
  app.use((req,res,next)=>{req.requestId=randomUUID();res.set('X-Request-Id',req.requestId);res.set('Cache-Control','no-store');const start=Date.now();res.on('finish',()=>logger({requestId:req.requestId,method:req.method,status:res.statusCode,durationMs:Date.now()-start}));next();});
@@ -19,7 +21,7 @@ export function createApp({authenticate,origin='http://localhost:5173',clock,log
  app.use(['/api/transactions/imports','/api/v1/transactions/imports'],express.json({limit:'1mb',strict:true}));
  app.use(express.json({limit:'32kb',strict:true}));
  app.use((req,_res,next)=>{if(['POST','PATCH'].includes(req.method)&&!req.is('application/json'))throw new ApiError(415,'UNSUPPORTED_MEDIA_TYPE','Use application/json.');next();});
- const router=apiRouter(clock);app.use('/api/v1',router);app.use('/api',router);
+ const router=apiRouter(clock,assistant,aiOptions);app.use('/api/v1',router);app.use('/api',router);
  app.use((_req,_res,next)=>next(new ApiError(404,'NOT_FOUND','Endpoint not found.')));
  app.use((error,req,res,_next)=>{let status=500,code='INTERNAL_ERROR',message='Request could not be completed.';
  if(error instanceof ZodError){status=400;code='VALIDATION_ERROR';message='Invalid request fields.';}
