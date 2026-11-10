@@ -32,7 +32,7 @@ export async function buildFinancialContext(repository,{question='',asOf,purpose
  const wantsRecommendations=purpose==='recommendations'||(purpose==='chat'&&/reduce|saving|unused|recommend|waste|review/i.test(question));
  const dismissed=wantsRecommendations?new Set((await repository.all('ai_recommendation_dismissals')).map(r=>r.recommendation_id)):new Set();
  const recommendations=wantsRecommendations?recommendationCandidates(ranked,facts,findings).filter(r=>!dismissed.has(r.id)):[];
- const warnings=['Financial facts are backend-calculated; suggestions and predictions are not settled payments.','No reliable usage telemetry, budgets, bank connection or financial-adviser capability is available.'];
+ const warnings=['Financial facts are backend-calculated; suggestions and predictions are not settled payments.','No reliable usage telemetry, budgets, bank connection or financial-adviser capability is available.','Income and income-minus-expenses savings are not recorded. Spending credits are adjustments, not verified income.'];
  if(plans.length>20||findings.length>10||suggestions.length>5)warnings.push('Individual context is limited; aggregates use the bounded complete dataset.');
  const allowedIds=new Set(recommendations.flatMap(r=>r.evidence.map(e=>e.id)));
  const scopedFacts=purpose==='insight'?facts.filter(f=>f.recordId===insightId):purpose==='score'?facts.filter(f=>f.kind==='waste_score'):purpose==='recommendations'?facts.filter(f=>allowedIds.has(f.id)):facts;

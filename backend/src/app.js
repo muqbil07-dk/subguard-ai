@@ -9,10 +9,32 @@ import { ZodError } from 'zod';
 import { ApiError } from './utils/errors.js';
 import { requireAuth } from './middleware/auth.js';
 import { apiRouter } from './routes/api.js';
-export function createApp({authenticate,origin='http://localhost:5173',clock,logger=()=>{},rateLimitMax=120,assistant=createFinancialAssistant(createGeminiProvider({AI_ENABLED:false})),aiOptions}={}){
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { createMonitor, routeLabel, safeErrorCode, failureCategory, safeLog } from './services/observability.js';
+export function createApp({authenticate,origin='http://localhost:5173',clock,logger=()=>{},monitor=()=>{},rateLimitMax=120,assistant=createFinancialAssistant(createGeminiProvider({AI_ENABLED:false})),aiOptions}={}){
  if(!authenticate)throw new Error('An authenticator is required');
  const app=express();app.disable('x-powered-by');app.set('trust proxy',false);
- app.use((req,res,next)=>{req.requestId=randomUUID();res.set('X-Request-Id',req.requestId);res.set('Cache-Control','no-store');const start=Date.now();res.on('finish',()=>logger({requestId:req.requestId,method:req.method,status:res.statusCode,durationMs:Date.now()-start}));next();});
+ const report=createMonitor(monitor),context=new AsyncLocalStorage();
+ const observedAssistant={...assistant,async explain(...args){
+  const start=performance.now(),requestId=context.getStore()?.requestId;
+  const purpose=args[2]?.purpose||'chat';
+  try{const result=await assistant.explain(...args);report({event:'ai_operation',requestId,purpose,outcome:'success',category:'none',durationMs:performance.now()-start});return result;}
+  catch(error){const code=safeErrorCode(error.code);report({event:'ai_operation',requestId,purpose,outcome:'server_error',category:failureCategory(code,error.status||500),code,durationMs:performance.now()-start});throw error;}
+ }};
+ app.use((req,res,next)=>{
+  req.requestId=randomUUID();res.set('X-Request-Id',req.requestId);res.set('Cache-Control','no-store');
+  const start=performance.now(),route=routeLabel(req.path);let errorCode,finished=false;
+  const json=res.json;
+  res.json=function(body){if(body?.error)errorCode=safeErrorCode(body.error.code);return json.call(this,body);};
+  res.on('finish',()=>{
+   finished=true;const durationMs=Math.round(performance.now()-start);
+   safeLog(logger,{requestId:req.requestId,method:req.method,status:res.statusCode,durationMs});
+   const code=res.statusCode>=400?(errorCode||'INTERNAL_ERROR'):undefined;
+   report({event:'api_request',requestId:req.requestId,method:req.method,route,status:res.statusCode,durationMs,code,category:failureCategory(code||'',res.statusCode),outcome:res.statusCode>=500?'server_error':res.statusCode>=400?'client_error':'success'});
+  });
+  res.on('close',()=>{if(!finished)report({event:'api_request',requestId:req.requestId,method:req.method,route,status:499,durationMs:performance.now()-start,category:'request',outcome:'aborted'});});
+  context.run({requestId:req.requestId},next);
+ });
  app.use(helmet());
  app.use(cors({origin(requestOrigin,callback){if(!requestOrigin||requestOrigin===origin)return callback(null,true);callback(new ApiError(403,'ORIGIN_DENIED','Origin is not permitted.'));},methods:['GET','POST','PATCH','DELETE','OPTIONS'],allowedHeaders:['Authorization','Content-Type','Idempotency-Key']}));
  app.use(rateLimit({windowMs:60000,limit:rateLimitMax,standardHeaders:'draft-8',legacyHeaders:false,handler:(req,res)=>res.status(429).json({error:{code:'RATE_LIMITED',message:'Too many requests.',requestId:req.requestId}})}));
@@ -21,7 +43,7 @@ export function createApp({authenticate,origin='http://localhost:5173',clock,log
  app.use(['/api/transactions/imports','/api/v1/transactions/imports'],express.json({limit:'1mb',strict:true}));
  app.use(express.json({limit:'32kb',strict:true}));
  app.use((req,_res,next)=>{if(['POST','PATCH'].includes(req.method)&&!req.is('application/json'))throw new ApiError(415,'UNSUPPORTED_MEDIA_TYPE','Use application/json.');next();});
- const router=apiRouter(clock,assistant,aiOptions);app.use('/api/v1',router);app.use('/api',router);
+ const router=apiRouter(clock,observedAssistant,aiOptions);app.use('/api/v1',router);app.use('/api',router);
  app.use((_req,_res,next)=>next(new ApiError(404,'NOT_FOUND','Endpoint not found.')));
  app.use((error,req,res,_next)=>{let status=500,code='INTERNAL_ERROR',message='Request could not be completed.';
  if(error instanceof ZodError){status=400;code='VALIDATION_ERROR';message='Invalid request fields.';}

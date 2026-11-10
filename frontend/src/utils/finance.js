@@ -138,7 +138,7 @@ export function getReportSummary(snapshot, currency = 'INR', period = 'monthly')
   const summary = getSummary(snapshot, currency);
   return {
     spentMinor: getNetSpend(snapshot.transactions, currency, { from, to: DEMO_TODAY }),
-    annualizedMinor: (BigInt(summary.monthlyMinor) * 12n).toString(),
+    annualizedMinor: snapshot.subscriptions.filter(plan => plan.status === 'Active' && plan.currency === currency).reduce((sum, plan) => sum + moneyInteger(plan.amountMinor) * BigInt({ Weekly: 52, Monthly: 12, Quarterly: 4, 'Half-yearly': 2, Yearly: 1 }[plan.frequency]), 0n).toString(),
     savingsMinor: summary.savingsMinor, monthlyMinor: summary.monthlyMinor,
     transactionCount: snapshot.transactions.filter((row) => row.currency === currency && row.type === 'imported' && row.status === 'Completed' && row.date >= from && row.date <= DEMO_TODAY).length,
     from, to: DEMO_TODAY, period,

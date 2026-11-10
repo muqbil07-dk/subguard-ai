@@ -1,0 +1,61 @@
+name: Quality and security regression
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AI_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - name: Install locked backend dependencies
+        run: npm ci
+        working-directory: backend
+      - name: Install locked frontend dependencies
+        run: npm ci
+        working-directory: frontend
+      - name: Backend lint, syntax and measured test coverage
+        working-directory: backend
+        run: |
+          npm run lint
+          npm run check:syntax
+          npm run build
+          npm run test:coverage
+          npm run check:concurrency
+      - name: Frontend lint, component tests and PostgreSQL migration/RLS tests
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm test
+          npm run build
+      - name: Dependency security checks (including development tooling)
+        run: |
+          npm audit --prefix backend --audit-level=high
+          npm audit --prefix frontend --audit-level=high
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Production browser regression (isolated fixtures, no live services)
+        working-directory: frontend
+        run: |
+          CHROMIUM_PATH="$(node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log(chromium.executablePath())')" npm run test:e2e
+      - name: Record workflow outcome
+        if: always()
+        env:
+          REGRESSION_RESULT: ${{ job.status }}
+        run: |
+          printf 'Quality regression result: %s\n' "$REGRESSION_RESULT" >> "$GITHUB_STEP_SUMMARY"

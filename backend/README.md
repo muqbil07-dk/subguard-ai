@@ -37,3 +37,21 @@ AI defaults to disabled. Backend-only key/model configuration, migration 005,
 quotas, live smoke commands and failure behavior are documented in
 [AI_FINANCIAL_INTELLIGENCE.md](../docs/AI_FINANCIAL_INTELLIGENCE.md).
 Remote provider failure does not stop the deterministic API.
+
+## Reliability and security regression
+
+Run `npm run test:coverage` for measured Node/V8 backend coverage and
+`npm run check:syntax` to check every backend source, script and test.
+[Phase 7 QA](../docs/PHASE_7_QUALITY_ASSURANCE.md) documents the full local/CI
+workflow, real test counts, verified fixes, audit findings and unverified services.
+
+## Staging validation and operations (Phase 8)
+
+See [Phase 8 readiness](../docs/PHASE_8_STAGING_READINESS.md) for actual results,
+remote CI evidence and remaining live-service gates. `npm run check:concurrency`
+is bounded loopback-only validation with synthetic adapters. `staging:gemini`,
+`staging:supabase` and `ai:smoke` require explicit live opt-in; they refuse execution
+by default. Follow [the live-validation runbook](../docs/STAGING_LIVE_VALIDATION.md)
+before supplying isolated-project credentials. Public health is liveness;
+authenticated `/api/readiness` performs only a bounded owned-profile probe.
+Production/staging configuration requires HTTPS. No deployment is performed.

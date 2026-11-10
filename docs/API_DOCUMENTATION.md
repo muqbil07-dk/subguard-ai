@@ -294,3 +294,15 @@ These are planned checks, **not executed test results**:
 
 See [architecture](ARCHITECTURE.md) for service boundaries and
 [database design](DATABASE_DESIGN.md) for proposed constraints and policies.
+
+
+## Phase 8 operational readiness
+
+`GET /api/readiness` and `/api/v1/readiness` require the existing bearer
+verification and accept no query fields. A bounded owner-scoped profile read
+returns `{data:{status:"ready",database:"reachable"}}`; missing profile returns
+503 `DATABASE_NOT_READY`, while a failed query returns safe database errors.
+`GET /api/health` remains public liveness and does not establish external readiness.
+No credential or financial record is returned by either endpoint. See
+[Phase 8 staging readiness](PHASE_8_STAGING_READINESS.md) for monitoring and live
+validation limits.
