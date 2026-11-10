@@ -8,6 +8,11 @@ It does not hold customer funds or guarantee prevention of a charge.
 
 ## 1. Status and decisions
 
+Phase 6 adds backend-only Gemini assistance, grounded responses, chat persistence
+and optional AI mode; see [AI_FINANCIAL_INTELLIGENCE.md](AI_FINANCIAL_INTELLIGENCE.md).
+Live provider and hosted Supabase validation remain outstanding; Phase 7 is not started.
+
+
 This is the **Phase 1 architecture contract**, not a description of working
 integrations. Phase 2 now implements the React frontend and an isolated local
 demo adapter following the approved plan; see the

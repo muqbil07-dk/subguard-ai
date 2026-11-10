@@ -105,3 +105,10 @@ Set `VITE_API_BASE_URL` to the Express API base (`/api` or `/api/v1`). The prote
 and calendar responses; `/app` remains the explicit local demo. An API failure
 never falls back to demo records. Profile/preferences and stored insights retain
 their Phase 3 RLS-scoped services. See [backend handoff](../docs/BACKEND_IMPLEMENTATION.md).
+
+## Account AI Assistant (Phase 6)
+
+The protected account assistant uses only the backend AI API for saved chats,
+evidence-linked guidance, recommendations and review scores. The original local
+demo assistant stays separate and does not call a model. No Google keys belong
+in frontend environment variables. See [AI handoff](../docs/AI_FINANCIAL_INTELLIGENCE.md).

@@ -2,6 +2,11 @@
 
 ## Status and boundary
 
+Phase 6 adds backend-only Gemini assistance, grounded responses, chat persistence
+and optional AI mode; see [AI_FINANCIAL_INTELLIGENCE.md](AI_FINANCIAL_INTELLIGENCE.md).
+Live provider and hosted Supabase validation remain outstanding; Phase 7 is not started.
+
+
 Phase 5 intelligence endpoints, storage and validation are documented in
 [SUBSCRIPTION_INTELLIGENCE.md](SUBSCRIPTION_INTELLIGENCE.md).
 

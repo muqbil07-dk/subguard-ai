@@ -30,3 +30,10 @@ adds owner-only notification deletion. See
 [BACKEND_IMPLEMENTATION.md](../docs/BACKEND_IMPLEMENTATION.md) for the current API,
 frontend wiring, limits and remaining live verification. Do not execute destructive
 schema resets at application startup.
+
+## Gemini assistance (Phase 6)
+
+AI defaults to disabled. Backend-only key/model configuration, migration 005,
+quotas, live smoke commands and failure behavior are documented in
+[AI_FINANCIAL_INTELLIGENCE.md](../docs/AI_FINANCIAL_INTELLIGENCE.md).
+Remote provider failure does not stop the deterministic API.

@@ -1,11 +1,13 @@
+import { aiRouter } from './ai.js';
 import { createSubscription } from '../services/subscriptions.js';
 import { intelligenceRouter } from './intelligence.js';
 import { Router } from 'express';
 import * as schemas from '../services/schemas.js';
 import * as finance from '../services/finance.js';
 const parse=schemas.parse;
-export function apiRouter(clock=finance.today){
+export function apiRouter(clock=finance.today,assistant,aiOptions){
  const router=Router();
+ router.use('/ai',aiRouter(assistant,aiOptions));
  router.use('/intelligence',intelligenceRouter(clock));
  const success=(res,data,status=200)=>res.status(status).json({data});
  for(const table of ['subscriptions','transactions']){
