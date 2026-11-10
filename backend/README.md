@@ -37,3 +37,10 @@ AI defaults to disabled. Backend-only key/model configuration, migration 005,
 quotas, live smoke commands and failure behavior are documented in
 [AI_FINANCIAL_INTELLIGENCE.md](../docs/AI_FINANCIAL_INTELLIGENCE.md).
 Remote provider failure does not stop the deterministic API.
+
+## Reliability and security regression
+
+Run `npm run test:coverage` for measured Node/V8 backend coverage and
+`npm run check:syntax` to check every backend source, script and test.
+[Phase 7 QA](../docs/PHASE_7_QUALITY_ASSURANCE.md) documents the full local/CI
+workflow, real test counts, verified fixes, audit findings and unverified services.

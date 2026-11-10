@@ -73,8 +73,13 @@ describe('local demo reporting', () => {
     const snapshot = createSeedSnapshot();
     const report = getReportSummary(snapshot, 'INR', 'monthly');
     expect(report.spentMinor).toBe(getNetSpend(snapshot.transactions, 'INR', { from: '2026-11-01', to: '2026-11-09' }));
-    expect(report.annualizedMinor).toBe((BigInt(report.monthlyMinor) * 12n).toString());
+    expect(report.annualizedMinor).toBe('7535900');
     expect(getReportSummary(snapshot, 'INR', 'yearly').from).toBe('2026-01-01');
     expect(getNetSpend([{ currency: 'INR', type: 'imported', status: 'Completed', direction: 'credit', amountMinor: '120', date: '2026-11-01' }], 'INR')).toBe('-120');
   });
 });
+
+it('annual demo reports preserve original yearly and quarterly cents across monthly rounding',()=>{
+ const subscriptions=[{id:'annual',name:'Annual',category:'Tools',currency:'INR',frequency:'Yearly',amountMinor:'150',nextRenewal:'2026-11-15',status:'Active'},{id:'quarterly',name:'Quarterly',category:'Tools',currency:'INR',frequency:'Quarterly',amountMinor:'101',nextRenewal:'2026-11-15',status:'Active'}]
+ expect(getReportSummary({subscriptions,transactions:[],dismissedInsights:[]},'INR').annualizedMinor).toBe('554')
+})

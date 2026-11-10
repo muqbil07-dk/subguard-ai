@@ -2,9 +2,16 @@
 
 ## Goal, scope and current state
 
+The user-requested **Phase 7 is comprehensive QA**, superseding the original
+PayPal ordering below. See [Phase 7 validation](PHASE_7_QUALITY_ASSURANCE.md).
+PayPal is deferred; no Phase 8 work is authorized or started. The original
+foundation phase descriptions below are retained as planning history.
+
 Phase 6 adds backend-only Gemini assistance, grounded responses, chat persistence
 and optional AI mode; see [AI_FINANCIAL_INTELLIGENCE.md](AI_FINANCIAL_INTELLIGENCE.md).
-Live provider and hosted Supabase validation remain outstanding; Phase 7 is not started.
+Phase 7 QA is complete for the implemented scope; see
+[PHASE_7_QUALITY_ASSURANCE.md](PHASE_7_QUALITY_ASSURANCE.md) for measured results,
+verified fixes and limitations. Live provider and hosted Supabase validation remain outstanding; Phase 8 is not started.
 
 
 Phase 5 now implements the deterministic engine, persisted review workflow and

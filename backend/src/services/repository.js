@@ -2,7 +2,7 @@ import { ApiError, databaseError } from '../utils/errors.js';
 const fields={subscriptions:{name:'name',category:'category',amountMinor:'amount_minor',currency:'currency',frequency:'frequency',nextRenewal:'next_renewal',status:'status',unused:'unused',reminder:'reminder',color:'color',initials:'initials'},transactions:{merchant:'merchant',amountMinor:'amount_minor',currency:'currency',date:'date',category:'category',source:'source',status:'status',direction:'direction',batchKey:'batch_key',rowIndex:'row_index'},notifications:{title:'title',body:'body',read_at:'read_at',created_at:'created_at'}};
 const encode=(table,value)=>Object.fromEntries(Object.entries(fields[table]).filter(([key])=>value[key]!==undefined).map(([key,column])=>[column,value[key]]));
 const decode=(table,row)=>!fields[table]?row:({id:row.id,...Object.fromEntries(Object.entries(fields[table]).map(([key,column])=>[key,key==='amountMinor'?String(row[column]):row[column]]))});
-const run=async query=>{const {data,error,count}=await query;if(error)throw databaseError(error);return {data,count};};
+const run=async query=>{let result;try{result=await query;}catch{throw databaseError({});}const {data,error,count}=result;if(error)throw databaseError(error);return {data,count};};
 export function createRepository(client,userId,intelligenceWriter=null) {
   const owned=table=>client.from(table).select('*',{count:'exact'}).eq('user_id',userId);
   const privileged=()=>{if(!intelligenceWriter)throw new ApiError(503,'INTELLIGENCE_UNAVAILABLE','Intelligence persistence requires server-only configuration.');return intelligenceWriter;};

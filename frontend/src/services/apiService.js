@@ -3,7 +3,12 @@ export function createApiService({getClient=requireSupabase,fetcher=globalThis.f
  const request=async(path,{method='GET',body,headers={}}={})=>{
   const {data,error}=await getClient().auth.getSession();if(error)throw error;if(!data.session?.access_token)throw new Error('Sign in to access your account.');
   let response;try{response=await fetcher(`${baseUrl.replace(/\/$/,'')}${path}`,{method,signal:AbortSignal.timeout(path.startsWith('/ai/')?60000:15000),headers:{Authorization:`Bearer ${data.session.access_token}`,...(body!==undefined?{'Content-Type':'application/json'}:{}),...headers},...(body!==undefined?{body:JSON.stringify(body)}:{})})}catch{throw new Error('The account API is unavailable. Your demo remains separate; no sample data was substituted.')}
-  const result=await response.json();if(!response.ok)throw Object.assign(new Error(result.error?.message||'Account request failed.'),{code:result.error?.code,status:response.status});return result;
+  const unreadable=()=>Object.assign(new Error('The account API returned an unreadable response. Please retry.'),{code:'INVALID_API_RESPONSE',status:response.status})
+  let result;try{result=await response.json()}catch{throw unreadable()}
+  if(!result||typeof result!=='object'||Array.isArray(result))throw unreadable()
+  if(!response.ok)throw Object.assign(new Error(result.error?.message||'Account request failed.'),{code:result.error?.code,status:response.status})
+  if(!Object.hasOwn(result,'data'))throw unreadable()
+  return result;
  }
  const resource=path=>({
   async list(){let page=1,rows=[];while(page<=100){const result=await request(`${path}?limit=100&page=${page}`);rows.push(...result.data);if(!result.pagination||page*100>=result.pagination.total)return rows;page++}throw new Error('Account list exceeds the current supported limit.');},

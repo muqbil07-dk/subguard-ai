@@ -21,7 +21,8 @@ decisions. No AI response can write financial tables, execute SQL, initiate
 payments or cancel a merchant agreement. AI writes are limited to validated chat
 history and user-controlled dismissal records. The isolated `/app` demo and its
 unavailable assistant remain unchanged; authenticated `/account` has a separate
-AI Assistant view. Phase 7 is not started.
+AI Assistant view. Phase 7 reliability/security QA results and remaining live
+validation limits are in [PHASE_7_QUALITY_ASSURANCE.md](PHASE_7_QUALITY_ASSURANCE.md).
 
 ## Configure and run
 

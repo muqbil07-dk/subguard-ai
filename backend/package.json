@@ -13,7 +13,9 @@
     "lint": "eslint src test",
     "build": "node --check src/server.js && node --check src/app.js",
     "ai:models": "node --env-file-if-exists=.env scripts/gemini-models.js",
-    "ai:smoke": "node --env-file-if-exists=.env scripts/gemini-smoke.js"
+    "ai:smoke": "node --env-file-if-exists=.env scripts/gemini-smoke.js",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" test/*.test.js",
+    "check:syntax": "find src scripts test -name '*.js' -type f -print0 | xargs -0 -n 1 node --check"
   },
   "dependencies": {
     "@google/genai": "3.0.0",

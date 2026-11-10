@@ -10,7 +10,9 @@ It does not hold customer funds or guarantee prevention of a charge.
 
 Phase 6 adds backend-only Gemini assistance, grounded responses, chat persistence
 and optional AI mode; see [AI_FINANCIAL_INTELLIGENCE.md](AI_FINANCIAL_INTELLIGENCE.md).
-Live provider and hosted Supabase validation remain outstanding; Phase 7 is not started.
+Phase 7 QA is complete for the implemented scope; see
+[PHASE_7_QUALITY_ASSURANCE.md](PHASE_7_QUALITY_ASSURANCE.md) for measured results,
+verified fixes and limitations. Live provider and hosted Supabase validation remain outstanding; Phase 8 is not started.
 
 
 This is the **Phase 1 architecture contract**, not a description of working
@@ -18,7 +20,7 @@ integrations. Phase 2 now implements the React frontend and an isolated local
 demo adapter following the approved plan; see the
 [frontend handoff](FRONTEND_IMPLEMENTATION.md). Phase 3 added Supabase Auth/persistence code and Phase 4 adds the Express API; see
 [backend handoff](BACKEND_IMPLEMENTATION.md). These have not been verified against
-a live Supabase project. PayPal and AI provider integrations remain unimplemented;
+a live Supabase project. PayPal remains unimplemented; Phase 6 implements the optional Gemini adapter;
 the frontend demo requires no credentials. The component and domain
 boundaries below remain the target for the later backend phases.
 

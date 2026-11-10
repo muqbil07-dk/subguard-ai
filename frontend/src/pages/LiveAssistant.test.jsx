@@ -133,3 +133,35 @@ describe('account AI assistant', () => {
     expect(screen.getByText('Not marked unused (user preference)')).toBeInTheDocument()
   })
 })
+
+it('ignores an older history response when switching conversations quickly',async()=>{
+ const second={...savedConversation,id:'conversation-b',title:'Other conversation'}
+ ai.listConversations.mockResolvedValue({data:[savedConversation,second],pagination:{page:1,limit:25,total:2}})
+ let resolveFirst
+ ai.getConversation.mockImplementation(id=>id===savedConversation.id?new Promise(resolve=>{resolveFirst=resolve}):Promise.resolve({data:{conversation:second,messages:[{id:'b-1',role:'user',content:'Only the second conversation',created_at:second.created_at}]},pagination:{page:1,limit:25,total:1}}))
+ const user=userEvent.setup();render(<LiveAssistant/>)
+ await user.click(await screen.findByRole('button',{name:/Review my subscriptions.*10 Nov/}))
+ await user.click(screen.getByRole('button',{name:/Other conversation.*10 Nov/}))
+ expect(await screen.findByText('Only the second conversation')).toBeInTheDocument()
+ await act(async()=>resolveFirst({data:{conversation:savedConversation,messages:savedMessages},pagination:{page:1,limit:25,total:2}}))
+ expect(screen.getByText('Only the second conversation')).toBeInTheDocument()
+ expect(screen.queryByText(response.answer)).not.toBeInTheDocument()
+})
+it('retrieves saved chat again after unmount/remount without generating another answer',async()=>{
+ ai.listConversations.mockResolvedValue({data:[savedConversation],pagination:{page:1,limit:25,total:1}})
+ ai.getConversation.mockResolvedValue({data:{conversation:savedConversation,messages:savedMessages},pagination:{page:1,limit:25,total:2}})
+ const user=userEvent.setup();const view=render(<LiveAssistant/>)
+ await user.click(await screen.findByRole('button',{name:/Review my subscriptions.*10 Nov/}))
+ expect(await screen.findByText(response.answer)).toBeInTheDocument();view.unmount();render(<LiveAssistant/>)
+ await user.click(await screen.findByRole('button',{name:/Review my subscriptions.*10 Nov/}))
+ expect(await screen.findByText(response.answer)).toBeInTheDocument();expect(ai.chat).not.toHaveBeenCalled();expect(ai.createConversation).not.toHaveBeenCalled()
+})
+it('recovers failed message retrieval with an explicit retry',async()=>{
+ ai.listConversations.mockResolvedValue({data:[savedConversation],pagination:{page:1,limit:25,total:1}})
+ ai.getConversation.mockRejectedValueOnce(new Error('History is temporarily unavailable')).mockResolvedValueOnce({data:{conversation:savedConversation,messages:savedMessages},pagination:{page:1,limit:25,total:2}})
+ const user=userEvent.setup();render(<LiveAssistant/>)
+ await user.click(await screen.findByRole('button',{name:/Review my subscriptions.*10 Nov/}))
+ expect(await screen.findByRole('alert')).toHaveTextContent('History is temporarily unavailable')
+ await user.click(screen.getByRole('button',{name:'Retry messages'}))
+ expect(await screen.findByText(response.answer)).toBeInTheDocument();expect(screen.queryByText('Loading saved messages…')).not.toBeInTheDocument()
+})

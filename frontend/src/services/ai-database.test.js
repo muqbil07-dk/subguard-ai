@@ -184,3 +184,31 @@ it('enforces persistent 5/minute and 50/day reservations and resets expired buck
   await as(a)
   await expect(db.query('select * from private.ai_request_usage')).rejects.toThrow()
 })
+
+it('keeps multiple conversation turns separate across user session changes',async()=>{
+ const first=await conversation(a,'First conversation'),second=await conversation(a,'Second conversation')
+ await service()
+ await append(a,first,'First question',{answer:'First answer'})
+ await append(a,second,'Second question',{answer:'Second answer'})
+ await append(a,first,'Follow-up',{answer:'Follow-up answer'})
+ await as(b)
+ expect((await db.query('select * from public.ai_messages where conversation_id in ($1,$2)',[first,second])).rows).toHaveLength(0)
+ await as(a)
+ expect((await db.query('select content from public.ai_messages where conversation_id=$1 order by sequence',[first])).rows.map(r=>r.content)).toEqual(['First question','First answer','Follow-up','Follow-up answer'])
+ expect((await db.query('select content from public.ai_messages where conversation_id=$1 order by sequence',[second])).rows.map(r=>r.content)).toEqual(['Second question','Second answer'])
+})
+it('simultaneously queued replay requests preserve one atomic turn and immutable answer',async()=>{
+ const id=await conversation(b,'Queued idempotency checks'),key='44444444-4444-4444-8444-444444444444'
+ await service()
+ const results=await Promise.all(Array.from({length:5},()=>db.query('select public.append_ai_turn($1,$2,$3,$4::jsonb,$5) as id',[b,id,'Queued question',JSON.stringify({answer:'Canonical answer'}),key])))
+ expect(new Set(results.map(r=>r.rows[0].id)).size).toBe(1)
+ await as(b)
+ expect((await db.query('select * from public.ai_messages where conversation_id=$1',[id])).rows).toHaveLength(2)
+})
+it('a missing conversation rejects a turn without creating orphan messages',async()=>{
+ await service()
+ const id='55555555-5555-4555-8555-555555555555'
+ await expect(append(a,id)).rejects.toThrow('Conversation unavailable')
+ await as(a)
+ expect((await db.query('select * from public.ai_messages where conversation_id=$1',[id])).rows).toHaveLength(0)
+})
