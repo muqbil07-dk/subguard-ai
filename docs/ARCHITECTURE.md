@@ -11,9 +11,10 @@ It does not hold customer funds or guarantee prevention of a charge.
 This is the **Phase 1 architecture contract**, not a description of working
 integrations. Phase 2 now implements the React frontend and an isolated local
 demo adapter following the approved plan; see the
-[frontend handoff](FRONTEND_IMPLEMENTATION.md). Express, Supabase, PayPal and AI
-provider integrations remain unimplemented. No database migrations have been
-applied, and the frontend demo requires no credentials. The component and domain
+[frontend handoff](FRONTEND_IMPLEMENTATION.md). Phase 3 added Supabase Auth/persistence code and Phase 4 adds the Express API; see
+[backend handoff](BACKEND_IMPLEMENTATION.md). These have not been verified against
+a live Supabase project. PayPal and AI provider integrations remain unimplemented;
+the frontend demo requires no credentials. The component and domain
 boundaries below remain the target for the later backend phases.
 
 | Decision | Rationale and boundary |

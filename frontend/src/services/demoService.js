@@ -2,7 +2,7 @@ import { createSeedSnapshot } from '../data/demoData';
 import { currencyDigits, monthlyMinor, supportedCurrencies, validDate } from '../utils/finance';
 
 export const DEMO_STORAGE_KEY = 'subguard-demo-v2';
-const frequencies = ['Weekly', 'Monthly', 'Quarterly', 'Yearly'];
+const frequencies = ['Weekly', 'Monthly', 'Quarterly', 'Half-yearly', 'Yearly'];
 const statuses = ['Active', 'Paused', 'Cancelled'];
 const transactionStatuses = ['Completed', 'Pending', 'Reversed'];
 // The frontend demo is a bounded preview, not a full BIGINT financial ledger.

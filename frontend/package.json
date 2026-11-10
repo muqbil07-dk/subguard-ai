@@ -15,6 +15,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.119.0",
     "framer-motion": "14.11.1",
     "lucide-react": "1.70.0",
     "react": "19.3.1",
@@ -23,6 +24,7 @@
     "recharts": "3.10.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.15",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.65.0",
     "@tailwindcss/vite": "4.3.5",

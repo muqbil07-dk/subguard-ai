@@ -1,0 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
+export const supabaseConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY))
+export const supabase = supabaseConfigured ? createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } }) : null
+export function requireSupabase() { if (!supabase) throw Object.assign(new Error('Supabase authentication is not connected yet. No account was created, no email was sent, and no password was stored. Configure the public project URL and anon key.'), {code:'AUTH_UNAVAILABLE'}); return supabase }

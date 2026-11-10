@@ -2,6 +2,11 @@
 
 ## Goal, scope and current state
 
+Phase 5 now implements the deterministic engine, persisted review workflow and
+account UI described in [SUBSCRIPTION_INTELLIGENCE.md](SUBSCRIPTION_INTELLIGENCE.md).
+Live Supabase validation remains pending configuration; Phase 6 is not started.
+
+
 Build a complete, honest MVP for the PayPal AI Hackathon 2026: a user signs in,
 imports consented spending history, reviews detected subscriptions, sees likely
 renewals and possible billing anomalies, and asks for a grounded explanation.

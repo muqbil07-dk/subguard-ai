@@ -1,34 +1,32 @@
-# Backend foundation
+# SubGuard AI REST API
 
-Reserved for a Node.js 24 LTS / Express JavaScript REST API and a worker using
-shared domain services. No runtime dependencies, application handlers or servers
-have been installed or implemented in Phase 1. Add an npm manifest, lockfile and
-verified scripts when backend implementation begins.
+Node 24 LTS, Express, Zod and a request-scoped Supabase SDK client. Run from this
+directory:
 
-| Directory | Responsibility |
-| --- | --- |
-| `src/config` | Fail-fast validated configuration; separate public/private settings |
-| `src/controllers` | Translate validated HTTP requests and domain results |
-| `src/routes` | Versioned REST routing and middleware composition |
-| `src/middleware` | JWT verification, schema validation, rate limits, request IDs, errors |
-| `src/services` | Deterministic financial logic, persistence adapters, AI provider adapters |
-| `src/utils` | Currency, date and identifier primitives with focused tests |
-| `src/webhooks` | PayPal signature verification, durable receipt, dispatch and replay control |
+```sh
+npm ci --cache .npm
+# Configure an ignored .env using .env.example, then:
+npm run dev
+npm test
+npm run lint
+npm run build
+npm start
+```
 
-As implementation grows, place `intelligence/`, `ai/`, `paypal/`, `ingestion/`
-and `notifications/` beneath `services/`; keep HTTP and provider-specific code
-outside pure financial functions. A worker entry point can reuse those services.
+`build` performs JavaScript entry-point syntax checks; no transpilation is needed.
+Tests execute actual Express HTTP requests with Supertest, mocked authentication
+and repositories, plus direct tests of the real Supabase query adapter and Auth
+verification adapter. They do not establish live Supabase connectivity.
 
-Copy [`.env.example`](.env.example) to `.env` when configuring a real server.
-Blank values intentionally contain no credentials. Only enable features whose
-required configuration passes validation. API processes must not silently fall
-back to fake payment events or made-up AI responses.
+Required settings: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (or public
+`SUPABASE_ANON_KEY`), exact `FRONTEND_ORIGIN`, optional `PORT` (3000).
+The service-role credential is neither required nor used by ordinary API routes.
+Never put it in frontend configuration. Requests require a Supabase bearer token;
+Supabase Auth verifies it via `getUser(token)`. Each caller gets an isolated client
+carrying that token so database RLS applies in addition to owner filters.
 
-Ordinary API reads and editable CRUD run as the authenticated caller so Supabase
-RLS applies. Narrow privileged adapters handle generated ingestion/intelligence
-writes, private payment tables and worker work with explicit owner checks;
-do not use that privilege for generic user CRUD. Private tables are accessed
-through reviewed service-only transactional RPCs, not by exposing the private
-schema to the Data API. See [architecture](../docs/ARCHITECTURE.md),
-[database design](../docs/DATABASE_DESIGN.md) and
-[API contracts](../docs/API_DOCUMENTATION.md).
+Apply database migrations 001, 002 and 003 before using the API. The third migration
+adds owner-only notification deletion. See
+[BACKEND_IMPLEMENTATION.md](../docs/BACKEND_IMPLEMENTATION.md) for the current API,
+frontend wiring, limits and remaining live verification. Do not execute destructive
+schema resets at application startup.

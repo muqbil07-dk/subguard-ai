@@ -3,7 +3,7 @@ import { Button, Field } from '../../components/ui.jsx';
 import { parseAmount, supportedCurrencies } from '../../utils/finance.js';
 
 export const categories = ['Entertainment', 'Productivity', 'Design', 'Cloud storage', 'Education', 'Health & fitness', 'Shopping', 'Other'];
-export const frequencies = ['Weekly', 'Monthly', 'Quarterly', 'Yearly'];
+export const frequencies = ['Weekly', 'Monthly', 'Quarterly', 'Half-yearly', 'Yearly'];
 
 function decimalAmount(minor, currency) {
   const digits = currency === 'JPY' ? 0 : 2;
