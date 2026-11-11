@@ -48,7 +48,7 @@ begin
  select * into row from public.recurring_detection_suggestions where id=suggestion and user_id=owner for update;
  if not found then raise exception 'Suggestion unavailable' using errcode='P0002';end if;
  if decision='reject' then if row.state='Confirmed' then raise exception 'Already confirmed' using errcode='23505';end if;update public.recurring_detection_suggestions set state='Rejected' where id=suggestion;return null;end if;
- if decision<>'confirm' then raise exception 'Invalid decision';end if;
+ if decision IS DISTINCT FROM 'confirm' then raise exception 'Invalid decision';end if;
  if row.state='Confirmed' then if row.subscription_id is null then raise exception 'Confirmed tracking was removed' using errcode='23505';end if;return row.subscription_id;end if;
  if row.state<>'Suggested' or row.frequency is null then raise exception 'Not confirmable' using errcode='23505';end if;
  insert into public.subscriptions(user_id,name,category,amount_minor,currency,frequency,next_renewal,status)
