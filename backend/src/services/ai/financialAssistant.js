@@ -3,6 +3,7 @@ import { buildFinancialContext } from './financialContextBuilder.js';
 import { validateResponse } from './responseValidator.js';
 import { ApiError } from '../../utils/errors.js';
 import { redactInput } from './aiSafety.js';
+import { AI_TIMEOUTS } from './timeouts.js';
 export function createFinancialAssistant(provider,{now=()=>new Date().toISOString(),asOf,reserveRequest=repository=>repository.reserveAiRequest()}={}){
  const cache=new Map();
  async function perform(repository,userId,{question,purpose='chat',insightId,history=[]},signal){
@@ -21,7 +22,7 @@ export function createFinancialAssistant(provider,{now=()=>new Date().toISOStrin
  }
  async function explain(repository,userId,options){
  const controller=new AbortController();let timer;
- try{return await Promise.race([perform(repository,userId,options,controller.signal),new Promise((_resolve,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new ApiError(504,'AI_TIMEOUT','AI request exceeded its total deadline.'));},40000)})]);}finally{clearTimeout(timer)}
+ try{return await Promise.race([perform(repository,userId,options,controller.signal),new Promise((_resolve,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new ApiError(504,'AI_TIMEOUT','AI request exceeded its total deadline.'));},AI_TIMEOUTS.assistantTotalMs)})]);}finally{clearTimeout(timer)}
  }
  return {explain,provider,buildContext:(repository,options)=>buildFinancialContext(repository,{...options,asOf:asOf||now().slice(0,10)})};
 }

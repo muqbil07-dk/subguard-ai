@@ -9,6 +9,33 @@ function fixture() {
 const reply = (data, ok = true, status = 200) => ({ ok, status, json: async () => data })
 
 describe('synthetic assistant HTTP boundary', () => {
+  it('waits beyond the old browser deadline without accepting an unbounded request', async () => {
+    vi.useFakeTimers()
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockImplementation(ms => {
+      const controller = new AbortController()
+      setTimeout(() => controller.abort(), ms)
+      return controller.signal
+    })
+    try {
+      let signal
+      const data = fixture()
+      const fetcher = (_url, options) => new Promise((resolve, reject) => {
+        signal = options.signal
+        signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true })
+        setTimeout(() => resolve(reply({ data })), 70000)
+      })
+      const pending = createAssistantService({ fetcher }).sendMessage({ message: 'Review synthetic subscriptions' })
+      await vi.advanceTimersByTimeAsync(56000)
+      expect(signal.aborted).toBe(false)
+      await vi.advanceTimersByTimeAsync(14000)
+      await expect(pending).resolves.toEqual(data)
+      expect(timeout).toHaveBeenCalledWith(85000)
+    } finally {
+      vi.clearAllTimers()
+      timeout.mockRestore()
+      vi.useRealTimers()
+    }
+  })
   it('sends only the trimmed question to the dedicated endpoint without account credentials', async () => {
     const data = fixture(), fetcher = vi.fn().mockResolvedValue(reply({ data }))
     const api = createAssistantService({ fetcher, baseUrl: 'https://api.example/api/' })

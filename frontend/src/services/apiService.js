@@ -1,8 +1,9 @@
 import { requireSupabase } from './supabaseClient.js'
+import { AI_REQUEST_TIMEOUT_MS } from '../utils/aiTimeouts.js'
 export function createApiService({getClient=requireSupabase,fetcher=globalThis.fetch,baseUrl=import.meta.env.VITE_API_BASE_URL||'http://localhost:3000/api'}={}) {
  const request=async(path,{method='GET',body,headers={}}={})=>{
   const {data,error}=await getClient().auth.getSession();if(error)throw error;if(!data.session?.access_token)throw new Error('Sign in to access your account.');
-  let response;try{response=await fetcher(`${baseUrl.replace(/\/$/,'')}${path}`,{method,signal:AbortSignal.timeout(path.startsWith('/ai/')?60000:15000),headers:{Authorization:`Bearer ${data.session.access_token}`,...(body!==undefined?{'Content-Type':'application/json'}:{}),...headers},...(body!==undefined?{body:JSON.stringify(body)}:{})})}catch{throw new Error('The account API is unavailable. Your demo remains separate; no sample data was substituted.')}
+  let response;try{response=await fetcher(`${baseUrl.replace(/\/$/,'')}${path}`,{method,signal:AbortSignal.timeout(path.startsWith('/ai/')?AI_REQUEST_TIMEOUT_MS:15000),headers:{Authorization:`Bearer ${data.session.access_token}`,...(body!==undefined?{'Content-Type':'application/json'}:{}),...headers},...(body!==undefined?{body:JSON.stringify(body)}:{})})}catch{throw new Error('The account API is unavailable. Your demo remains separate; no sample data was substituted.')}
   const unreadable=()=>Object.assign(new Error('The account API returned an unreadable response. Please retry.'),{code:'INVALID_API_RESPONSE',status:response.status})
   let result;try{result=await response.json()}catch{throw unreadable()}
   if(!result||typeof result!=='object'||Array.isArray(result))throw unreadable()

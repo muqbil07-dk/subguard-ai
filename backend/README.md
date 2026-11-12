@@ -92,6 +92,13 @@ timeouts remain enabled. Hosted demo mode additionally requires
 `ALLOW_PUBLIC_DEMO=true`, `NODE_ENV=staging` or `production`, and an HTTPS
 `FRONTEND_ORIGIN`. This documentation does not deploy anything.
 
+Metadata verification has a 10-second deadline. Each of the two sequential
+generation requests has a 30-second HTTP deadline, within a 70-second provider
+budget and 75-second total assistant deadline. Demo and account browser clients
+wait up to 85 seconds. Retries remain disabled beyond the initial attempt;
+timeouts identify model verification, tool selection or structured response
+generation without exposing provider details. A slow answer still fails closed.
+
 No official PayPal hackathon brief is present in this repository, so mandatory
 PayPal usage remains unverified. Payment APIs and webhook verification remain
 unimplemented; the synthetic AI demo never manufactures payment events.

@@ -1,4 +1,5 @@
 import { supportedCurrencies } from '../utils/finance.js'
+import { AI_REQUEST_TIMEOUT_MS } from '../utils/aiTimeouts.js'
 
 const object = value => Boolean(value && typeof value === 'object' && !Array.isArray(value))
 const text = (value, max = 6000) => typeof value === 'string' && value.length <= max
@@ -32,7 +33,7 @@ function validResponse(value) {
 }
 
 /** Public synthetic-only API; never sends account tokens or browser financial data. */
-export function createAssistantService({ fetcher = globalThis.fetch, baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api', timeoutMs = 55000 } = {}) {
+export function createAssistantService({ fetcher = globalThis.fetch, baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api', timeoutMs = AI_REQUEST_TIMEOUT_MS } = {}) {
   const demoBase = baseUrl.replace(/\/$/, '').replace(/\/api\/v1$/, '/api')
   return {
     async sendMessage({ message }, { signal } = {}) {
