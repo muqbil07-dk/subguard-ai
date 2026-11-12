@@ -13,8 +13,9 @@ and optional AI mode; see [AI_FINANCIAL_INTELLIGENCE.md](AI_FINANCIAL_INTELLIGEN
 Phase 7 QA is complete for the implemented scope; see
 [PHASE_7_QUALITY_ASSURANCE.md](PHASE_7_QUALITY_ASSURANCE.md) for measured results,
 verified fixes and limitations. Live provider and hosted Supabase validation remain outstanding; Phase 8 adds guarded integration validation and operational safeguards; see
-[PHASE_8_STAGING_READINESS.md](PHASE_8_STAGING_READINESS.md). Hosted services remain
-unverified and the release decision is PARTIALLY READY. Phase 9 is not started.
+[PHASE_8_STAGING_READINESS.md](PHASE_8_STAGING_READINESS.md). Phase 8 assessed readiness as PARTIALLY READY. The current Phase 9 release decision
+is BLOCKED by missing hosted access; see
+[PHASE_9_RELEASE_QUALIFICATION.md](PHASE_9_RELEASE_QUALIFICATION.md). Phase 10 is not started.
 
 
 This is the **Phase 1 architecture contract**, not a description of working

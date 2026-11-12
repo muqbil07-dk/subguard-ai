@@ -8,7 +8,7 @@ const codes = new Set([
   'AI_UNGROUNDED', 'AI_CONTEXT_LIMIT', 'AI_DISABLED', 'AI_TOOL_REJECTED', 'AI_INVALID_RESPONSE',
 ]);
 const routes = [
-  ['/health', '/health'], ['/readiness', '/readiness'],
+  ['/health', '/health'], ['/readiness', '/readiness'], ['/demo/assistant', '/demo/assistant'],
   ['/dashboard/summary', '/dashboard/summary'], ['/dashboard/spending', '/dashboard/spending'],
   ['/dashboard/category-breakdown', '/dashboard/category-breakdown'],
   ['/dashboard/upcoming-payments', '/dashboard/upcoming-payments'], ['/calendar', '/calendar'],
