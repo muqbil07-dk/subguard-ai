@@ -124,17 +124,34 @@ test('payment calendar changes months, selects dates and persists local reminder
   await expect(page.locator('.calendar-timeline').getByRole('button', { name: 'Set reminder indicator', exact: true })).toBeVisible();
 });
 
-test('assistant prompts submit a question without pretending to produce AI output', async ({ page }) => {
+test('synthetic assistant sends only the question and supports honest unavailable/retry states', async ({ page }) => {
+  // Explicit API test fixture, not evidence of a live Gemini response.
+  const requests = [];
+  await page.route('**/api/demo/assistant', async route => {
+    requests.push(route.request().postDataJSON());
+    expect(route.request().headers().authorization).toBeUndefined();
+    await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({
+      error: { code: 'AI_DISABLED', message: 'AI assistance is disabled. No AI answer was generated.' },
+      data: { mode: 'synthetic_demo', synthetic: true, label: 'Synthetic Demo Data',
+        dataset: { id: 'browser-test-synthetic', asOf: '2026-11-11' },
+        context: { asOf: '2026-11-11', facts: [], summary: [], recommendations: [], warnings: [] },
+        ai: { provider: 'gemini', generated: false } },
+    }) });
+  });
   await openWorkspace(page, '/assistant');
-  await page.getByRole('button', { name: 'How much do I spend monthly?', exact: true }).click();
-  await expect(page.getByLabel('Ask about your subscriptions')).toHaveValue('How much do I spend monthly?');
+  const question = 'How much am I spending on subscriptions every month?';
+  await page.getByRole('button', { name: question, exact: true }).click();
+  await expect(page.getByLabel('Ask about your subscriptions')).toHaveValue(question);
   await page.getByRole('button', { name: 'Send question', exact: true }).click();
   const conversation = page.getByRole('log', { name: 'Conversation' });
-  await expect(conversation).toContainText('How much do I spend monthly?');
-  await expect(conversation).toContainText('not connected');
-  await expect(conversation).toContainText('not an AI reply');
+  await expect(conversation).toContainText(question);
+  await expect(conversation).toContainText('AI unavailable · no generated reply');
+  await expect(conversation).toContainText('No AI answer was generated');
+  await page.getByRole('button', { name: 'Retry question', exact: true }).click();
+  await expect.poll(() => requests.length).toBe(2);
+  expect(requests).toEqual([{ message: question }, { message: question }]);
   await page.getByRole('button', { name: 'New conversation', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'A clearer answer starts with a good question.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Understand the numbers/ })).toBeVisible();
 });
 
 test('settings persist currency filtering without relabeling or converting INR records', async ({ page }) => {

@@ -4,8 +4,9 @@ SubGuard AI — **Never Lose Money on Forgotten Subscriptions.**
 
 React, Vite and JavaScript with Tailwind CSS, React Router, Recharts, Lucide React
 and Framer Motion. Phase 2 implements a responsive frontend and an isolated local
-demo service. Supabase Auth, backend REST APIs, AI models and PayPal remain
-disconnected. No credentials are required to explore the demo. Node 24 LTS is the
+demo service. The synthetic assistant can use the separate backend described
+below; real account integrations still require their own configuration. No
+credentials are required to explore the browser-local dashboard. Node 24 LTS is the
 project baseline (see [`.nvmrc`](../.nvmrc)); exact dependencies are locked in
 `package-lock.json`.
 
@@ -51,8 +52,8 @@ SPA hosting must rewrite application routes to `index.html`.
   coherent; future real financial calculations must come from the backend.
 - Subscription changes affect local tracking only. They do not cancel external
   merchant agreements. Reminder controls store preferences; no notifications send.
-- AI Insights are deterministic sample explanations. The assistant interface
-  reports that no provider is connected, rather than inventing model responses.
+- AI Insights are deterministic sample explanations. The assistant calls an
+  explicitly enabled synthetic backend and labels unavailable AI honestly.
 - PayPal merchant events have a separate unavailable view, with no generated
   payment events and no external bank or wallet history claim.
 - Settings → Demo workspace can export or reset sample data. Malformed local
@@ -74,8 +75,8 @@ SPA hosting must rewrite application routes to `index.html`.
 | `src/context` | Demo state loading, mutations and toast lifecycle |
 | `src/test` | Component-test environment setup |
 
-The local demo does not use environment credentials. [`.env.example`](.env.example)
-reserves public settings for future integration. All `VITE_*` values are public.
+The browser-local dashboard does not use environment credentials.
+[`.env.example`](.env.example) lists public API/Auth settings. All `VITE_*` values are public.
 A publishable Supabase key is safe
 only with correct database grants and Row Level Security. Never place a PayPal
 secret, AI key or Supabase service-role key in this directory.
@@ -109,6 +110,32 @@ their Phase 3 RLS-scoped services. See [backend handoff](../docs/BACKEND_IMPLEME
 ## Account AI Assistant (Phase 6)
 
 The protected account assistant uses only the backend AI API for saved chats,
-evidence-linked guidance, recommendations and review scores. The original local
-demo assistant stays separate and does not call a model. No Google keys belong
+evidence-linked guidance, recommendations and review scores. The synthetic demo
+assistant stays separate from account records and history. No Google keys belong
 in frontend environment variables. See [AI handoff](../docs/AI_FINANCIAL_INTELLIGENCE.md).
+
+## Synthetic assistant quick start
+
+Start the backend in explicit demo mode using the
+[backend commands](../backend/README.md#isolated-synthetic-ai-demo-no-supabase),
+then start the frontend from the repository root:
+
+```sh
+cd frontend
+VITE_API_BASE_URL=http://localhost:3000/api npm run dev
+```
+
+Open `http://localhost:5173/app/assistant`. Suggested questions and retry call
+`POST /api/demo/assistant` without account tokens, cookies, browser financial
+records or user IDs. This is a fixed fictional backend snapshot dated
+11 November 2026, distinct from the dashboard's editable 9 November snapshot.
+The backend computes amounts, currencies, renewal estimates and hypothetical
+removal scenarios; Gemini selects evidence and cautious interpretations. The UI
+renders verified facts separately from AI prose, with no financial actions.
+
+Without an enabled/configured provider, the error is explicit and the returned
+deterministic context remains available. It is never presented as an AI reply.
+Do not enter personal information. Questions can go to Gemini when enabled;
+conversation messages remain in this tab and are not persisted by the backend.
+For hosting, set the public API base to the HTTPS backend origin plus `/api`,
+set matching backend CORS, and configure SPA rewrites. No deployment is performed.

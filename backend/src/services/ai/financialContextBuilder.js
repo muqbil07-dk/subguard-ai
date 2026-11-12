@@ -29,7 +29,7 @@ export async function buildFinancialContext(repository,{question='',asOf,purpose
  if(needsTrends)for(const currency of [...new Set(transactions.map(t=>t.currency))])for(const row of spending(transactions,{currency,from:asOf.slice(0,7)+'-01',to:asOf}))add(`${currency}-${row.month}`,'completed_spend','Completed net spending this calendar month',{amountMinor:row.amountMinor,currency,basis:'Completed debits less credits; partial month'},'getSpendingTrends');
  const score=wasteScore(plans,findings,asOf);
  if(score.state==='ready')add('score','waste_score','Deterministic review-priority score',{value:score.score,basis:'Explicit unused flags and unreviewed findings; not cost alone'},'getFinancialSummary');
- const wantsRecommendations=purpose==='recommendations'||(purpose==='chat'&&/reduce|saving|unused|recommend|waste|review/i.test(question));
+ const wantsRecommendations=purpose==='recommendations'||(purpose==='chat'&&/reduce|saving|unused|recommend|waste|review|remove|cancel|annual|yearly/i.test(question));
  const dismissed=wantsRecommendations?new Set((await repository.all('ai_recommendation_dismissals')).map(r=>r.recommendation_id)):new Set();
  const recommendations=wantsRecommendations?recommendationCandidates(ranked,facts,findings).filter(r=>!dismissed.has(r.id)):[];
  const warnings=['Financial facts are backend-calculated; suggestions and predictions are not settled payments.','No reliable usage telemetry, budgets, bank connection or financial-adviser capability is available.','Income and income-minus-expenses savings are not recorded. Spending credits are adjustments, not verified income.'];

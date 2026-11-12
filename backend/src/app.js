@@ -9,10 +9,14 @@ import { ZodError } from 'zod';
 import { ApiError } from './utils/errors.js';
 import { requireAuth } from './middleware/auth.js';
 import { apiRouter } from './routes/api.js';
+import { demoRouter } from './routes/demo.js';
+import { createDemoAssistant } from './services/demo/demoAssistant.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createMonitor, routeLabel, safeErrorCode, failureCategory, safeLog } from './services/observability.js';
-export function createApp({authenticate,origin='http://localhost:5173',clock,logger=()=>{},monitor=()=>{},rateLimitMax=120,assistant=createFinancialAssistant(createGeminiProvider({AI_ENABLED:false})),aiOptions}={}){
- if(!authenticate)throw new Error('An authenticator is required');
+export function createApp({appMode='account',authenticate,origin='http://localhost:5173',clock,logger=()=>{},monitor=()=>{},rateLimitMax=120,assistant=createFinancialAssistant(createGeminiProvider({AI_ENABLED:false})),aiOptions,demoAssistant,demoOptions}={}){
+ if(!['account','demo'].includes(appMode))throw new Error('Invalid application mode');
+ if(appMode==='account'&&!authenticate)throw new Error('An authenticator is required');
+ if(appMode==='demo'&&authenticate)throw new Error('Demo mode cannot initialize account authentication');
  const app=express();app.disable('x-powered-by');app.set('trust proxy',false);
  const report=createMonitor(monitor),context=new AsyncLocalStorage();
  const observedAssistant={...assistant,async explain(...args){
@@ -39,11 +43,20 @@ export function createApp({authenticate,origin='http://localhost:5173',clock,log
  app.use(cors({origin(requestOrigin,callback){if(!requestOrigin||requestOrigin===origin)return callback(null,true);callback(new ApiError(403,'ORIGIN_DENIED','Origin is not permitted.'));},methods:['GET','POST','PATCH','DELETE','OPTIONS'],allowedHeaders:['Authorization','Content-Type','Idempotency-Key']}));
  app.use(rateLimit({windowMs:60000,limit:rateLimitMax,standardHeaders:'draft-8',legacyHeaders:false,handler:(req,res)=>res.status(429).json({error:{code:'RATE_LIMITED',message:'Too many requests.',requestId:req.requestId}})}));
  app.get('/api/health',(_req,res)=>res.json({data:{status:'ok'}}));
+ if(appMode==='demo'){
+  app.use('/api/demo/assistant',express.json({limit:'4kb',strict:true}),(req,_res,next)=>{
+   if(req.method==='POST'&&!req.is('application/json'))throw new ApiError(415,'UNSUPPORTED_MEDIA_TYPE','Use application/json.');
+   next();
+  },demoRouter(demoAssistant||createDemoAssistant(createGeminiProvider({AI_ENABLED:false})),demoOptions));
+  // Account routes never receive a demo identity or fixture-backed repository.
+  app.use(['/api','/api/v1'],()=>{throw new ApiError(401,'UNAUTHORIZED','Account APIs are not available in synthetic demo mode.');});
+ }else{
  app.use(['/api','/api/v1'],requireAuth(authenticate),rateLimit({windowMs:60000,limit:rateLimitMax,keyGenerator:req=>req.user.id,standardHeaders:'draft-8',legacyHeaders:false,handler:(req,res)=>res.status(429).json({error:{code:'RATE_LIMITED',message:'Too many requests.',requestId:req.requestId}})}));
  app.use(['/api/transactions/imports','/api/v1/transactions/imports'],express.json({limit:'1mb',strict:true}));
  app.use(express.json({limit:'32kb',strict:true}));
  app.use((req,_res,next)=>{if(['POST','PATCH'].includes(req.method)&&!req.is('application/json'))throw new ApiError(415,'UNSUPPORTED_MEDIA_TYPE','Use application/json.');next();});
  const router=apiRouter(clock,observedAssistant,aiOptions);app.use('/api/v1',router);app.use('/api',router);
+ }
  app.use((_req,_res,next)=>next(new ApiError(404,'NOT_FOUND','Endpoint not found.')));
  app.use((error,req,res,_next)=>{let status=500,code='INTERNAL_ERROR',message='Request could not be completed.';
  if(error instanceof ZodError){status=400;code='VALIDATION_ERROR';message='Invalid request fields.';}

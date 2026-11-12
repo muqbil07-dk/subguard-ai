@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEMO_STORAGE_KEY, demoService } from './demoService';
 import { authService } from './authService';
-import { assistantService } from './assistantService';
+import { createAssistantService } from './assistantService';
 
 const input = { name: 'Test plan', category: 'Productivity', amountMinor: '99900', currency: 'INR', frequency: 'Quarterly', nextRenewal: '2026-12-01', status: 'Active', unused: false, reminder: true };
 const row = { merchant: 'Imported sample', date: '2026-11-08', amountMinor: '12000', currency: 'INR', category: 'Other' };
@@ -108,6 +108,14 @@ describe('honest unavailable integration boundaries', () => {
   });
 
   it('does not manufacture an AI answer', async () => {
-    await expect(assistantService.sendMessage('What do I spend?')).resolves.toMatchObject({ available: false });
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: false, status: 503,
+      json: async () => ({ error: { code: 'AI_DISABLED', message: 'AI assistance is disabled.' } }),
+    });
+    const assistant = createAssistantService({ fetcher, baseUrl: 'http://localhost:3000/api' });
+    await expect(assistant.sendMessage({ message: 'What do I spend?' })).rejects.toMatchObject({ code: 'AI_DISABLED', status: 503 });
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ message: 'What do I spend?' });
+    expect(localStorage.length).toBe(0);
   });
 });
